@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "RogueCharacter.generated.h"
+#include "RoguePlayerRogueCharacter.generated.h"
 
 class UNiagaraSystem;
 class UAnimMontage;
@@ -16,11 +16,11 @@ class USpringArmComponent;
 class UCameraComponent;
 
 UCLASS()
-class ACTIONROGUELIKE_API ARogueCharacter : public ACharacter {
+class ACTIONROGUELIKE_API ARoguePlayerRogueCharacter : public ACharacter {
 	GENERATED_BODY()
 
 public:
-	ARogueCharacter();
+	ARoguePlayerRogueCharacter();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
