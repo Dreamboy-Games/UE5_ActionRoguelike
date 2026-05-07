@@ -17,14 +17,17 @@ public:
 	ARogueItemChest();
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void Interact() override;
+	virtual void Interact_Implementation() override;
 
 protected:
 	UPROPERTY(EditAnywhere, Category="Animation")
 	float AnimationTargetPitch = 120.0f;
 	
 	UPROPERTY(EditAnywhere, Category="Animation")
-	float AnimationSpeed = 50.0f;
+	float AnimationSpeed = 150.0f;
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void ChestAnimationComplete();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Components")

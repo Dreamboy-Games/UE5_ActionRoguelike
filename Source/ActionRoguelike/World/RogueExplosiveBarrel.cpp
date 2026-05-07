@@ -66,19 +66,21 @@ void ARogueExplosiveBarrel::Explode()
 {
 	bExploded = true;
 	
-	if (ActiveBurningEffectComp)	ActiveBurningEffectComp->Deactivate();
+	if (ActiveBurningEffectComp) ActiveBurningEffectComp->Deactivate();
 	if (ActiveBurningSoundComp) ActiveBurningSoundComp->Stop();
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ExplosionEffect, GetActorLocation(), GetActorRotation());
 	UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation(), GetActorRotation());
-	
+
 	// Splash Damage
 	TArray<TObjectPtr<AActor>> IgnoreActors;
 	IgnoreActors.Add(this);
-	UGameplayStatics::ApplyRadialDamageWithFalloff(this, ExplosionDamage, 10.0f, MeshComponent->Bounds.Origin, 
+	UGameplayStatics::ApplyRadialDamageWithFalloff(this, ExplosionDamage, 10.0f, MeshComponent->Bounds.Origin,
 		ExplosionRadius * 0.5f, ExplosionRadius, 100.f, DmgTypeClass, IgnoreActors, this);
+	
 	// Radial Impulse
 	RadialForceComponent->FireImpulse();
 	
-	Destroy();
+	MeshComponent->AddImpulse(FVector::UpVector * 1000, NAME_None, true);
+	MeshComponent->AddAngularImpulseInDegrees(FVector::RightVector * 1000, NAME_None, true);
 }

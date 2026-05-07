@@ -60,8 +60,9 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 void URogueInteractionComponent::Interact()
 {
-	if (IRogueInteractionInterface* InteractInterface = Cast<IRogueInteractionInterface>(SelectedActor))
+	/* if (IRogueInteractionInterface* InteractInterface = Cast<IRogueInteractionInterface>(SelectedActor))
 	{
 		InteractInterface->Interact();
-	}
+	} */
+	if (SelectedActor) IRogueInteractionInterface::Execute_Interact(SelectedActor);
 }

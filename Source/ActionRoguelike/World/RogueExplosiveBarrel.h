@@ -57,6 +57,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Explosion")
 	TObjectPtr<USoundBase> ExplosionSound;
 	
+	UFUNCTION(BlueprintCallable)
 	void Explode();
 
 private:
