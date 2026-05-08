@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RoguePlayerRogueCharacter.h"
+#include "RoguePlayerCharacter.h"
 
 #include "EnhancedInputComponent.h"
 #include "NiagaraFunctionLibrary.h"
@@ -9,9 +9,10 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Projectiles/RogueProjectileBlackhole.h"
 
 
-ARoguePlayerRogueCharacter::ARoguePlayerRogueCharacter()
+ARoguePlayerCharacter::ARoguePlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -25,34 +26,36 @@ ARoguePlayerRogueCharacter::ARoguePlayerRogueCharacter()
 	MuzzleSocketName = FName("Muzzle_01");
 }
 
-void ARoguePlayerRogueCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
 	UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	
-	EnhancedInput->BindAction(Input_Move, ETriggerEvent::Triggered, this, &ARoguePlayerRogueCharacter::Move);
-	EnhancedInput->BindAction(Input_Look, ETriggerEvent::Triggered, this, &ARoguePlayerRogueCharacter::Look);
-	EnhancedInput->BindAction(Input_Jump, ETriggerEvent::Triggered, this, &ARoguePlayerRogueCharacter::Jump);
+	EnhancedInput->BindAction(Input_Move, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::Move);
+	EnhancedInput->BindAction(Input_Look, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::Look);
+	EnhancedInput->BindAction(Input_Jump, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::Jump);
 	
-	EnhancedInput->BindAction(Input_PrimaryAttack, ETriggerEvent::Triggered, this, &ARoguePlayerRogueCharacter::PrimaryAttack);
+	EnhancedInput->BindAction(Input_PrimaryAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::StartProjectileAttack, PrimaryProjectileClass);
+	EnhancedInput->BindAction(Input_SecondaryAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::StartProjectileAttack, SecondaryProjectileClass);
+	EnhancedInput->BindAction(Input_SpecialAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::StartProjectileAttack, SpecialProjectileClass);
 }
 
 
-void ARoguePlayerRogueCharacter::BeginPlay()
+void ARoguePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 
-void ARoguePlayerRogueCharacter::Tick(float DeltaTime)
+void ARoguePlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
 
-void ARoguePlayerRogueCharacter::Move(const FInputActionValue& InValue) 
+void ARoguePlayerCharacter::Move(const FInputActionValue& InValue) 
 {
 	const FVector2D InputValue = InValue.Get<FVector2D>();
 	
@@ -65,35 +68,40 @@ void ARoguePlayerRogueCharacter::Move(const FInputActionValue& InValue)
 	AddMovementInput(RightDirection, InputValue.Y);
 }
 
-void ARoguePlayerRogueCharacter::Look(const FInputActionInstance& InValue)
+void ARoguePlayerCharacter::Look(const FInputActionInstance& InValue)
 {
 	const FVector2D InputValue = InValue.GetValue().Get<FVector2D>();
 	AddControllerPitchInput(InputValue.Y);
 	AddControllerYawInput(InputValue.X);
 }
 
-void ARoguePlayerRogueCharacter::Jump()
+void ARoguePlayerCharacter::Jump()
 {
 	Super::Jump();
 }
 
-void ARoguePlayerRogueCharacter::PrimaryAttack()
+
+// ATTACK
+void ARoguePlayerCharacter::StartProjectileAttack(const TSubclassOf<ARogueProjectile> ProjectileClass)
 {
-	PlayAnimMontage(AttackMontage);
+	PlayAttackMontage();
 	
 	FTimerHandle AttackTimerHandle;
-	const float AttackDelayTimer = 0.2f;
-	
-	// Spawn Attack Effect & Play Attack Sound
+	constexpr float AttackDelayTimer = 0.2f;
+	FTimerDelegate AttackDelegate;
+	AttackDelegate.BindUObject(this, &ARoguePlayerCharacter::AttackTimerElapsed, ProjectileClass);
+	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, AttackDelegate, AttackDelayTimer, false);
+}
+
+void ARoguePlayerCharacter::PlayAttackMontage()
+{
+	PlayAnimMontage(AttackMontage);
 	UNiagaraFunctionLibrary::SpawnSystemAttached(CastingEffect, GetMesh(), MuzzleSocketName,
 		FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::Type::SnapToTarget, true);
 	UGameplayStatics::PlaySound2D(this, CastingSound);
-	
-	// Spawn Projectile after timer delay
-	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &ARoguePlayerRogueCharacter::AttackTimerElapsed, AttackDelayTimer);
 }
 
-void ARoguePlayerRogueCharacter::AttackTimerElapsed()
+void ARoguePlayerCharacter::AttackTimerElapsed(const TSubclassOf<ARogueProjectile> ProjectileClass)
 {
 	const FVector SpawnLocation = GetMesh()->GetSocketLocation(MuzzleSocketName);
 	const FRotator SpawnRotation = GetControlRotation();

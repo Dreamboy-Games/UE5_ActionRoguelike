@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "RoguePlayerRogueCharacter.generated.h"
+#include "RoguePlayerCharacter.generated.h"
 
+class ARogueProjectile;
 class UNiagaraSystem;
 class UAnimMontage;
+class ARogueProjectileBlackhole;
 class ARogueProjectileMagic;
 struct FInputActionInstance;
 struct FInputActionValue;
@@ -16,36 +18,41 @@ class USpringArmComponent;
 class UCameraComponent;
 
 UCLASS()
-class ACTIONROGUELIKE_API ARoguePlayerRogueCharacter : public ACharacter {
+class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter {
 	GENERATED_BODY()
 
 public:
-	ARoguePlayerRogueCharacter();
-	virtual void Tick(float DeltaTime) override;
+	ARoguePlayerCharacter();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	void Move(const FInputActionValue& InValue);
 	void Look(const FInputActionInstance& InValue);
 	virtual void Jump() override;
-
-	void PrimaryAttack();
+	
+	void StartProjectileAttack(const TSubclassOf<ARogueProjectile> ProjectileClass);
 
 protected:
-	virtual void BeginPlay() override;
+	UPROPERTY(EditDefaultsOnly, Category="Attack")
+	TSubclassOf<ARogueProjectile> PrimaryProjectileClass;
 	
-	UPROPERTY(EditDefaultsOnly, Category="PrimaryAttack")
-	TSubclassOf<ARogueProjectileMagic> ProjectileClass;
+	UPROPERTY(EditDefaultsOnly, Category="Attack")
+	TSubclassOf<ARogueProjectile> SecondaryProjectileClass;
 	
-	UPROPERTY(VisibleAnywhere, Category="PrimaryAttack")
+	UPROPERTY(EditDefaultsOnly, Category="Attack")
+	TSubclassOf<ARogueProjectile> SpecialProjectileClass;
+	
+	UPROPERTY(VisibleAnywhere, Category="Attack")
 	FName MuzzleSocketName;
 	
-	UPROPERTY(EditDefaultsOnly, Category="PrimaryAttack")
+	UPROPERTY(EditDefaultsOnly, Category="Attack")
 	TObjectPtr<UNiagaraSystem> CastingEffect;
 	
-	UPROPERTY(EditDefaultsOnly, Category="PrimaryAttack")
+	UPROPERTY(EditDefaultsOnly, Category="Attack")
 	TObjectPtr<USoundBase> CastingSound;
 	
-	UPROPERTY(EditDefaultsOnly, Category="PrimaryAttack")
+	UPROPERTY(EditDefaultsOnly, Category="Attack")
 	TObjectPtr<UAnimMontage> AttackMontage;
 	
 	UPROPERTY(VisibleAnywhere, Category="Components")
@@ -65,6 +72,13 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> Input_PrimaryAttack;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputAction> Input_SecondaryAttack;
 	
-	void AttackTimerElapsed();
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputAction> Input_SpecialAttack;
+	
+	void PlayAttackMontage();
+	void AttackTimerElapsed(const TSubclassOf<ARogueProjectile> ProjectileClass);
 };
