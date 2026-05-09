@@ -5,11 +5,12 @@
 
 #include "EnhancedInputComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "ActionRoguelike/Projectiles/RogueProjectileMagic.h"
+#include "ActionSystem/RogueActionSystemComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Projectiles/RogueProjectileBlackhole.h"
+#include "Projectiles/RogueProjectile.h"
 
 
 ARoguePlayerCharacter::ARoguePlayerCharacter()
@@ -23,7 +24,16 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 	
+	ActionSystemComponent = CreateDefaultSubobject<URogueActionSystemComponent>(TEXT("ActionSystemComponent"));
+	
 	MuzzleSocketName = FName("Muzzle_01");
+}
+
+void ARoguePlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	ActionSystemComponent->OnHealthChanged.AddDynamic(this, &ThisClass::OnHealthChanged);
 }
 
 void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -39,19 +49,6 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	EnhancedInput->BindAction(Input_PrimaryAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::StartProjectileAttack, PrimaryProjectileClass);
 	EnhancedInput->BindAction(Input_SecondaryAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::StartProjectileAttack, SecondaryProjectileClass);
 	EnhancedInput->BindAction(Input_SpecialAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::StartProjectileAttack, SpecialProjectileClass);
-}
-
-
-void ARoguePlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-
-void ARoguePlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 
@@ -112,4 +109,25 @@ void ARoguePlayerCharacter::AttackTimerElapsed(const TSubclassOf<ARogueProjectil
 	AActor* NewProjectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
 	
 	MoveIgnoreActorAdd(NewProjectile);
+}
+
+float ARoguePlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+                                        class AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	ActionSystemComponent->ApplyHealthChange(-ActualDamage);
+	
+	return ActualDamage;
+}
+
+void ARoguePlayerCharacter::OnHealthChanged(float NewHealth, float OldHealth)
+{
+	// Died?
+	if (FMath::IsNearlyZero(NewHealth))
+	{
+		DisableInput(nullptr);
+		GetMovementComponent()->StopMovementImmediately();
+		PlayAnimMontage(DeathMontage);
+	}
 }
