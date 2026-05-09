@@ -21,6 +21,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="_Interaction", meta=(DisplayPriority = "0"))
 	float InteractionRadius = 400;
 	
+	UPROPERTY(EditDefaultsOnly, Category="_Interaction", meta=(DisplayPriority = "0"))
+	float DistanceToWeightScale = 1.0f;
+	
+	UPROPERTY(EditDefaultsOnly, Category="_Interaction", meta=(DisplayPriority = "0"))
+	float DirectionWeightScale = 2.0f;
+	
 	UPROPERTY()
 	TObjectPtr<AActor> SelectedActor;
 
