@@ -4,7 +4,7 @@
 #include "RoguePlayerController.h"
 
 #include "EnhancedInputComponent.h"
-#include "RogueInteractionComponent.h"
+#include "Components/RogueInteractionComponent.h"
 
 ARoguePlayerController::ARoguePlayerController()
 {
