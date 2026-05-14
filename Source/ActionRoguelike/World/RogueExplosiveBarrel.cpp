@@ -21,6 +21,7 @@ ARogueExplosiveBarrel::ARogueExplosiveBarrel()
 	MeshComponent->SetCollisionProfileName("PhysicsActor");
 	MeshComponent->Mobility = EComponentMobility::Movable;
 	MeshComponent->bApplyImpulseOnDamage = true;
+	MeshComponent->SetCanEverAffectNavigation(false);
 	
 	RadialForceComponent = CreateDefaultSubobject<URadialForceComponent>(FName("RadialForceComponent"));
 	RadialForceComponent->SetupAttachment(RootComponent);

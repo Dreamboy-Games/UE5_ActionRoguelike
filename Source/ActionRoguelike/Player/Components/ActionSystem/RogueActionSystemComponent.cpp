@@ -9,6 +9,15 @@ URogueActionSystemComponent::URogueActionSystemComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+float URogueActionSystemComponent::GetHealth() const
+{
+	return Attributes.Health;
+}
+float URogueActionSystemComponent::GetMaxHealth() const
+{
+	return Attributes.HealthMax;
+}
+
 void URogueActionSystemComponent::ApplyHealthChange(float InValueChange)
 {
 	const float OldHealth = Attributes.Health;

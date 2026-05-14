@@ -34,10 +34,11 @@ class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent {
 public:
 	URogueActionSystemComponent();
 	
-	void ApplyHealthChange(float InValueChange);
-	
+	float GetHealth() const;
+	float GetMaxHealth() const;
 	bool IsFullHealth() const;
-	
+	void ApplyHealthChange(float InValueChange);
+
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;
 	

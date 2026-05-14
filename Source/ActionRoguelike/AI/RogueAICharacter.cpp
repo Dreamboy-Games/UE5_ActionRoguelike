@@ -1,0 +1,24 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "RogueAICharacter.h"
+
+#include "Player/Components/ActionSystem/RogueActionSystemComponent.h"
+
+
+ARogueAICharacter::ARogueAICharacter()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	
+	ActionSystemComponent = CreateDefaultSubobject<URogueActionSystemComponent>(TEXT("ActionSystemComponent"));
+}
+
+float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	ActionSystemComponent->ApplyHealthChange(-ActualDamage);
+	
+	return ActualDamage;
+}
