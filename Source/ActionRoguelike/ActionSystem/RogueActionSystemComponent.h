@@ -7,6 +7,8 @@
 #include "RogueActionSystemComponent.generated.h"
 
 
+class URogueAction;
+
 USTRUCT(BlueprintType)
 struct FRogueAttributeSet {
 	GENERATED_BODY()
@@ -30,20 +32,34 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, NewHealth,
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent {
 	GENERATED_BODY()
-
+	
 public:
 	URogueActionSystemComponent();
-	
-	float GetHealth() const;
-	float GetMaxHealth() const;
-	bool IsFullHealth() const;
-	void ApplyHealthChange(float InValueChange);
-
-	UPROPERTY(BlueprintAssignable)
-	FOnHealthChanged OnHealthChanged;
+	virtual void InitializeComponent() override;
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, Category="Attributes")
 	FRogueAttributeSet Attributes;
 
+	UPROPERTY()
+	TArray<TObjectPtr<URogueAction>> Actions;
+	
+	UPROPERTY(EditAnywhere, Category="Actions")
+	TArray<TSubclassOf<URogueAction>> DefaultActions;
+
+public:
+	void StartAction(const FName InActionName);
+	
+	void GrantAction(TSubclassOf<URogueAction> NewActionClass);
+
+	float GetHealth() const;
+
+	float GetMaxHealth() const;
+
+	bool IsFullHealth() const;
+
+	void ApplyHealthChange(float InValueChange);
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
 };

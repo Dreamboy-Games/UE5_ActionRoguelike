@@ -3,10 +3,45 @@
 
 #include "RogueActionSystemComponent.h"
 
+#include "RogueAction.h"
+
 
 URogueActionSystemComponent::URogueActionSystemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	bWantsInitializeComponent = true;
+}
+
+void URogueActionSystemComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	for (const TSubclassOf<URogueAction> ActionClass : DefaultActions)
+	{
+		if (ensure(ActionClass))
+		{
+			GrantAction(ActionClass);
+		}
+	}
+}
+
+void URogueActionSystemComponent::StartAction(const FName InActionName)
+{
+	for (URogueAction* Action : Actions)
+	{
+		if (Action->GetActionName() == InActionName)
+		{
+			Action->StartAction();
+			return;
+		}
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Action '%s' not found"), *InActionName.ToString());
+}
+
+void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActionClass)
+{
+	URogueAction* NewAction = NewObject<URogueAction>(this, NewActionClass);
+	Actions.Add(NewAction);
 }
 
 float URogueActionSystemComponent::GetHealth() const

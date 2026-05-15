@@ -3,8 +3,8 @@
 
 #include "RogueHealthPotion.h"
 
+#include "ActionSystem/RogueActionSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/Components/ActionSystem/RogueActionSystemComponent.h"
 
 
 ARogueHealthPotion::ARogueHealthPotion()

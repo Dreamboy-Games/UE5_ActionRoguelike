@@ -4,7 +4,7 @@
 #include "RogueBTTask_HealSelf.h"
 
 #include "AIController.h"
-#include "Player/Components/ActionSystem/RogueActionSystemComponent.h"
+#include "ActionSystem/RogueActionSystemComponent.h"
 
 EBTNodeResult::Type URogueBTTask_HealSelf::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {

@@ -3,7 +3,7 @@
 
 #include "RogueAICharacter.h"
 
-#include "Player/Components/ActionSystem/RogueActionSystemComponent.h"
+#include "ActionSystem/RogueActionSystemComponent.h"
 
 
 ARogueAICharacter::ARogueAICharacter()

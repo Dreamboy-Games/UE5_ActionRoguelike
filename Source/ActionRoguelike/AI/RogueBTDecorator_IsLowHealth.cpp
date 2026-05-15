@@ -4,7 +4,7 @@
 #include "RogueBTDecorator_IsLowHealth.h"
 
 #include "AIController.h"
-#include "Player/Components/ActionSystem/RogueActionSystemComponent.h"
+#include "ActionSystem/RogueActionSystemComponent.h"
 
 bool URogueBTDecorator_IsLowHealth::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
