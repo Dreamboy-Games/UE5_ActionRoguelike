@@ -45,6 +45,9 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	EnhancedInput->BindAction(Input_PrimaryAttack, ETriggerEvent::Triggered, this, &ThisClass::StartAction, FName("PrimaryAttack"));
 	EnhancedInput->BindAction(Input_SecondaryAttack, ETriggerEvent::Triggered, this, &ThisClass::StartAction, FName("SecondaryAttack"));
 	EnhancedInput->BindAction(Input_SpecialAttack, ETriggerEvent::Triggered, this, &ThisClass::StartAction, FName("SpecialAttack"));
+	
+	EnhancedInput->BindAction(Input_Sprint, ETriggerEvent::Started, this, &ThisClass::StartAction, FName("Sprint"));
+	EnhancedInput->BindAction(Input_Sprint, ETriggerEvent::Completed, this, &ThisClass::StopAction, FName("Sprint"));
 }
 
 
@@ -77,6 +80,11 @@ void ARoguePlayerCharacter::Jump()
 void ARoguePlayerCharacter::StartAction(const FName InActionName)
 {
 	ActionSystemComponent->StartAction(InActionName);
+}
+
+void ARoguePlayerCharacter::StopAction(const FName InActionName)
+{
+	ActionSystemComponent->StopAction(InActionName);
 }
 
 

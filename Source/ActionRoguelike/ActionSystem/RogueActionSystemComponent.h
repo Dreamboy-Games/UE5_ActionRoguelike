@@ -49,6 +49,7 @@ protected:
 
 public:
 	void StartAction(const FName InActionName);
+	void StopAction(const FName InActionName);
 	
 	void GrantAction(TSubclassOf<URogueAction> NewActionClass);
 

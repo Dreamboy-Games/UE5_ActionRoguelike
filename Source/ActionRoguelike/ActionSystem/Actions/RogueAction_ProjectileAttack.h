@@ -23,8 +23,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Attack")
 	TSubclassOf<ARogueProjectile> ProjectileClass;
 
-	UPROPERTY(VisibleAnywhere, Category="Attack")
-	FName MuzzleSocketName;
+	UPROPERTY(EditDefaultsOnly, Category="Attack")
+	FName MuzzleSocketName = FName("Muzzle_01");
 
 	UPROPERTY(EditDefaultsOnly, Category="Attack")
 	TObjectPtr<UNiagaraSystem> CastingEffect;
@@ -40,5 +40,7 @@ protected:
 public:
 	URogueAction_ProjectileAttack();
 	
-	virtual void StartAction() override;
+	virtual void StartAction_Implementation() override;
+	
+	virtual void StopAction_Implementation() override;
 };

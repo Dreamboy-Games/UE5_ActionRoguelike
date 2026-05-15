@@ -43,6 +43,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> Input_Jump;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputAction> Input_Sprint;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> Input_PrimaryAttack;
@@ -53,13 +56,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> Input_SpecialAttack;
 	
-	
 	// MONTAGES
 	UPROPERTY(EditDefaultsOnly, Category="Montages")
 	TObjectPtr<UAnimMontage> DeathMontage;
 	
 	// FUNCTIONS
 	void StartAction(const FName InActionName);
+	void StopAction(const FName InActionName);
 	
 	UFUNCTION()
 	void OnHealthChanged(float NewHealth, float OldHealth);
