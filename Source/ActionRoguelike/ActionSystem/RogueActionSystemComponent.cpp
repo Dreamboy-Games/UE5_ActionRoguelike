@@ -2,6 +2,7 @@
 
 
 #include "RogueActionSystemComponent.h"
+#include "GameplayTagContainer.h"
 
 #include "RogueAction.h"
 
@@ -24,13 +25,13 @@ void URogueActionSystemComponent::InitializeComponent()
 	}
 }
 
-void URogueActionSystemComponent::StartAction(const FName InActionName)
+void URogueActionSystemComponent::StartAction(const FGameplayTag InActionName)
 {
 	for (URogueAction* Action : Actions)
 	{
 		if (Action->GetActionName() == InActionName)
 		{
-			if (Action->CanStartAction())
+			if (Action->CanStart())
 			{
 				Action->StartAction();
 			}
@@ -41,7 +42,7 @@ void URogueActionSystemComponent::StartAction(const FName InActionName)
 	UE_LOG(LogTemp, Warning, TEXT("Action '%s' not found"), *InActionName.ToString());
 }
 
-void URogueActionSystemComponent::StopAction(const FName InActionName)
+void URogueActionSystemComponent::StopAction(const FGameplayTag InActionName)
 {
 	for (URogueAction* Action : Actions)
 	{

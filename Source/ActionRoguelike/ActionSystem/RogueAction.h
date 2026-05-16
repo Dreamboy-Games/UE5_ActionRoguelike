@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "UObject/Object.h"
 #include "RogueAction.generated.h"
 
@@ -17,7 +18,13 @@ class ACTIONROGUELIKE_API URogueAction : public UObject {
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Actions")
-	FName ActionName;
+	FGameplayTag ActionName;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Actions")
+	FGameplayTagContainer GrantTags;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Actions")
+	FGameplayTagContainer BlockedTags;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Actions")
 	float CooldownTime = 0.0f;
@@ -26,8 +33,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	URogueActionSystemComponent* GetOwningComponent() const;
 	
-	bool CanStartAction() const;
-	bool IsRunningAction() const { return bIsRunning;};
+	bool CanStart() const;
+	
+	bool IsRunning() const { return bIsRunning;};
 	
 	UFUNCTION(BlueprintNativeEvent, Category="Actions")
 	void StartAction();
@@ -37,7 +45,7 @@ public:
 
 	float GetCooldownTimeRemaining() const;
 	
-	FName GetActionName() const
+	FGameplayTag GetActionName() const
 	{
 		return ActionName;
 	}

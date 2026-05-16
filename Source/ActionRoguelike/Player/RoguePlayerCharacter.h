@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "RoguePlayerCharacter.generated.h"
 
+struct FGameplayTag;
 class URogueActionSystemComponent;
 class UAnimMontage;
 struct FInputActionInstance;
@@ -61,8 +62,8 @@ protected:
 	TObjectPtr<UAnimMontage> DeathMontage;
 	
 	// FUNCTIONS
-	void StartAction(const FName InActionName);
-	void StopAction(const FName InActionName);
+	void StartAction(const FGameplayTag InActionName);
+	void StopAction(const FGameplayTag InActionName);
 	
 	UFUNCTION()
 	void OnHealthChanged(float NewHealth, float OldHealth);

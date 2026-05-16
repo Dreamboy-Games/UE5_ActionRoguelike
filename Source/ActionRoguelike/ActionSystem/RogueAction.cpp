@@ -11,7 +11,9 @@ void URogueAction::StartAction_Implementation()
 	
 	float GameTime = GetWorld()->GetTimeSeconds();
 	
-	UE_LOGFMT(LogTemp, Log, "Started Action:  {ActionName} - {WorldTime}", ("ActionName", ActionName), ("WorldTime", GameTime));
+	UE_LOGFMT(LogTemp, Log, "Started Action:  {ActionName} - {WorldTime}", ("ActionName", ActionName.ToString()), ("WorldTime", GameTime));
+	
+	GetOwningComponent()->ActiveGameplayTags.AppendTags(GrantTags);
 }
 
 void URogueAction::StopAction_Implementation()
@@ -20,9 +22,11 @@ void URogueAction::StopAction_Implementation()
 	
 	float GameTime = GetWorld()->GetTimeSeconds();
 	
-	UE_LOGFMT(LogTemp, Log, "Stopped Action:  {ActionName} - {WorldTime}", ("ActionName", ActionName), ("WorldTime", GameTime));
+	UE_LOGFMT(LogTemp, Log, "Stopped Action:  {ActionName} - {WorldTime}", ("ActionName", ActionName.ToString()), ("WorldTime", GameTime));
 	
 	CooldownUntil = GetWorld()->TimeSeconds + CooldownTime;
+	
+	GetOwningComponent()->ActiveGameplayTags.RemoveTags(GrantTags);
 }
 
 URogueActionSystemComponent* URogueAction::GetOwningComponent() const
@@ -30,9 +34,9 @@ URogueActionSystemComponent* URogueAction::GetOwningComponent() const
 	return Cast<URogueActionSystemComponent>(GetOuter());
 }
 
-bool URogueAction::CanStartAction() const
+bool URogueAction::CanStart() const
 {
-	if (IsRunningAction())
+	if (IsRunning())
 	{
 		return false;
 	}
@@ -42,6 +46,12 @@ bool URogueAction::CanStartAction() const
 		UE_LOG(LogTemp, Log, TEXT("Cooldown remining: %f"), GetCooldownTimeRemaining());
 		return false;
 	}
+	
+	if (GetOwningComponent()->ActiveGameplayTags.HasAny(BlockedTags))
+	{
+		return false;
+	}
+	
 	return true;
 }
 
