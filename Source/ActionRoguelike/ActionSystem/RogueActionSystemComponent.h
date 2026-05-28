@@ -14,7 +14,7 @@ struct FGameplayTag;
 class URogueAction;
 
 
-UENUM()
+UENUM(BlueprintType)
 enum EAttributeModifyType {
 	Base,
 	Modifer,
@@ -33,6 +33,8 @@ class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent {
 public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
+	
+	virtual void BeginPlay() override;
 	
 protected:	
 	UPROPERTY()
@@ -57,8 +59,11 @@ public:
 	void StopAction(const FGameplayTag InActionName);
 
 	FRogueAttribute* GetAttribute(const FGameplayTag InAttributeTag) const;
-	void ApplyAttributeChange(FGameplayTag AttributeTag, float Delta, EAttributeModifyType ModifyType);
+	
 	FOnAttributeChanged& GetAttributeListener(FGameplayTag AttributeTag);
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyAttributeChange(FGameplayTag AttributeTag, float Delta, EAttributeModifyType ModifyType);
 	
 	FGameplayTagContainer ActiveGameplayTags;
 };

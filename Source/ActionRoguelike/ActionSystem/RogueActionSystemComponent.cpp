@@ -45,6 +45,12 @@ void URogueActionSystemComponent::InitializeComponent()
 	}
 }
 
+void URogueActionSystemComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	Attributes->InitializeAttributes();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ACTIONS
