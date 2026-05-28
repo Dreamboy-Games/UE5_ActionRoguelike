@@ -5,17 +5,37 @@
 #include "GameplayTagContainer.h"
 
 #include "RogueAction.h"
+#include "RogueAttributeSet.h"
+#include "RogueGameplayTags.h"
 
 
 URogueActionSystemComponent::URogueActionSystemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
+	
+	AttributeSetClass = URogueAttributeSet::StaticClass();
 }
 
 void URogueActionSystemComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
+	
+	Attributes = NewObject<URogueAttributeSet>(this, AttributeSetClass);
+	
+	// Iterate all the available UPROPERTY members of the class <URogueAttributeSet> Attributes
+	// Add all members to CachedAttributes Map with GameplayTag as key-value pair
+	for (TFieldIterator<FStructProperty> PropIt(Attributes->GetClass()); PropIt; ++PropIt)
+	{
+		FRogueAttribute* FoundAttribute = PropIt->ContainerPtrToValuePtr<FRogueAttribute>(Attributes);
+		
+		FName AttributeTagName = FName("Attribute." + PropIt->GetName());
+		FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(AttributeTagName);
+		
+		CachedAttributes.Add(AttributeTag, FoundAttribute);
+	}
+	
+	// Assign Actions to this component
 	for (const TSubclassOf<URogueAction> ActionClass : DefaultActions)
 	{
 		if (ensure(ActionClass))
@@ -25,6 +45,10 @@ void URogueActionSystemComponent::InitializeComponent()
 	}
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ACTIONS
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 void URogueActionSystemComponent::StartAction(const FGameplayTag InActionName)
 {
 	for (URogueAction* Action : Actions)
@@ -62,31 +86,52 @@ void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActio
 	Actions.Add(NewAction);
 }
 
-float URogueActionSystemComponent::GetHealth() const
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ATTRIBUTES
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Convenience function to access all members within <URogueAttributeSet> class,
+// regardless of which derived Attribute Set they might exist in
+FRogueAttribute* URogueActionSystemComponent::GetAttribute(const FGameplayTag InAttributeTag) const
 {
-	return Attributes.Health;
-}
-float URogueActionSystemComponent::GetMaxHealth() const
-{
-	return Attributes.HealthMax;
+	FRogueAttribute* FoundAttribute = *CachedAttributes.Find(InAttributeTag);
+	return FoundAttribute;
 }
 
-void URogueActionSystemComponent::ApplyHealthChange(float InValueChange)
+void URogueActionSystemComponent::ApplyAttributeChange(const FGameplayTag AttributeTag, const float Delta, EAttributeModifyType ModifyType)
 {
-	const float OldHealth = Attributes.Health;
+	FRogueAttribute* FoundAttribute = GetAttribute(AttributeTag);
+	check(FoundAttribute);
 	
-	//Attributes.Health += InValueChange;
-	Attributes.Health = FMath::Clamp(Attributes.Health + InValueChange, 0.0f, Attributes.HealthMax);
+	float OldValue = FoundAttribute->GetValue();
 
-	if (!FMath::IsNearlyEqual(OldHealth, Attributes.Health))
+	switch (ModifyType)
 	{
-		OnHealthChanged.Broadcast(Attributes.Health, OldHealth);
+	case Base:
+		FoundAttribute->Base += Delta;
+		break;
+	case Modifer:
+		FoundAttribute->Modifier += Delta;
+		break;
+	case OverrideBase:
+		FoundAttribute->Base = Delta;
+		break;
+	default:
+		check(false);
 	}
 	
-	UE_LOG(LogTemp, Log, TEXT("New health: %f / %f"), Attributes.Health, Attributes.HealthMax);
+	Attributes->PostAttributeChanged();
+
+	if (const FOnAttributeChanged* Event = AttributeListeners.Find(AttributeTag))
+	{
+		Event->Broadcast(AttributeTag, FoundAttribute->GetValue(), OldValue);
+	}
+	
+	UE_LOGFMT(LogTemp, Log, "Attribute: {0}, New: {1}, Old: {2}", AttributeTag.ToString(), FoundAttribute->GetValue(), OldValue);
 }
 
-bool URogueActionSystemComponent::IsFullHealth() const
+FOnAttributeChanged& URogueActionSystemComponent::GetAttributeListener(FGameplayTag AttributeTag)
 {
-	return FMath::IsNearlyEqual(Attributes.HealthMax, Attributes.Health);
+	return AttributeListeners.FindOrAdd(AttributeTag);
 }

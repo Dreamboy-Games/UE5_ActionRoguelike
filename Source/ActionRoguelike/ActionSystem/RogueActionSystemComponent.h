@@ -8,27 +8,22 @@
 #include "RogueActionSystemComponent.generated.h"
 
 
+struct FRogueAttribute;
+class URogueAttributeSet;
 struct FGameplayTag;
 class URogueAction;
 
-USTRUCT(BlueprintType)
-struct FRogueAttributeSet {
-	GENERATED_BODY()
-	
-	FRogueAttributeSet() :
-		Health(100.0f),
-		HealthMax(100.0f) {}
-	
-	
-	UPROPERTY(BlueprintReadOnly)
-	float Health;
-	
-	UPROPERTY(BlueprintReadOnly)
-	float HealthMax;
+
+UENUM()
+enum EAttributeModifyType {
+	Base,
+	Modifer,
+	OverrideBase,
+	Invalid
 };
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, NewHealth, float, OldHealth);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnAttributeChanged, FGameplayTag /*AttributeTag*/, float /*NewAttributeValue*/, float /*OldAttributeValue*/);
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -39,9 +34,16 @@ public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
 	
-protected:
-	UPROPERTY(BlueprintReadOnly, Category="Attributes")
-	FRogueAttributeSet Attributes;
+protected:	
+	UPROPERTY()
+	TObjectPtr<URogueAttributeSet> Attributes;
+	
+	TMap<FGameplayTag, FRogueAttribute*> CachedAttributes;
+	
+	UPROPERTY(EditAnywhere, Category=Attributes, NoClear)
+	TSubclassOf<URogueAttributeSet> AttributeSetClass;
+	
+	TMap<FGameplayTag, FOnAttributeChanged> AttributeListeners;
 
 	UPROPERTY()
 	TArray<TObjectPtr<URogueAction>> Actions;
@@ -50,21 +52,13 @@ protected:
 	TArray<TSubclassOf<URogueAction>> DefaultActions;
 
 public:
+	void GrantAction(TSubclassOf<URogueAction> NewActionClass);
 	void StartAction(const FGameplayTag InActionName);
 	void StopAction(const FGameplayTag InActionName);
-	
-	void GrantAction(TSubclassOf<URogueAction> NewActionClass);
 
-	float GetHealth() const;
-
-	float GetMaxHealth() const;
-
-	bool IsFullHealth() const;
-
-	void ApplyHealthChange(float InValueChange);
+	FRogueAttribute* GetAttribute(const FGameplayTag InAttributeTag) const;
+	void ApplyAttributeChange(FGameplayTag AttributeTag, float Delta, EAttributeModifyType ModifyType);
+	FOnAttributeChanged& GetAttributeListener(FGameplayTag AttributeTag);
 	
 	FGameplayTagContainer ActiveGameplayTags;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnHealthChanged OnHealthChanged;
 };

@@ -65,8 +65,7 @@ protected:
 	void StartAction(const FGameplayTag InActionName);
 	void StopAction(const FGameplayTag InActionName);
 	
-	UFUNCTION()
-	void OnHealthChanged(float NewHealth, float OldHealth);
+	void OnHealthChanged(FGameplayTag AttributesTag, float NewHealth, float OldHealth);
 
 	
 public:
