@@ -30,7 +30,7 @@ struct FRogueAttribute {
 /**
  * 
  */
-UCLASS()
+UCLASS(EditInlineNew)
 class ACTIONROGUELIKE_API URogueAttributeSet : public UObject {
 	GENERATED_BODY()
 	
@@ -51,10 +51,10 @@ public:
 	URogueHealthAttributeSet();
 	virtual void PostAttributeChanged() override;
 
-	UPROPERTY(EditAnywhere, Category=Attributes)
+	UPROPERTY(EditAnywhere, Category=Health)
 	FRogueAttribute Health;
 
-	UPROPERTY(EditAnywhere, Category=Attributes)
+	UPROPERTY(EditAnywhere, Category=Health)
 	FRogueAttribute HealthMax;
 };
 
@@ -71,8 +71,11 @@ public:
 	void ApplyMovementSpeed() const;
 	
 	// Walking speed directly linked with Character Movement Component
-	UPROPERTY(EditAnywhere, Category=Attributes)
+	UPROPERTY(EditAnywhere, Category=Movement)
 	FRogueAttribute MoveSpeed;
+	
+	UPROPERTY(EditAnywhere, Category=Movement)
+	FRogueAttribute MoveSpeedMultiplier;
 };
 
 
@@ -83,6 +86,8 @@ class URoguePlayerAttributeSet : public URoguePawnAttributeSet {
 public:
 	URoguePlayerAttributeSet();
 	
+	UPROPERTY(EditAnywhere, Category=Resources)
+	FRogueAttribute Rage;
 };
 
 

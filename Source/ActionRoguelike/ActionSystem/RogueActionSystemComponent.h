@@ -22,9 +22,10 @@ enum EAttributeModifyType {
 	Invalid
 };
 
-
+// Native C++ delegate
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnAttributeChanged, FGameplayTag /*AttributeTag*/, float /*NewAttributeValue*/, float /*OldAttributeValue*/);
-
+// Blueprint delegate
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnAttributeDynamicChanged, FGameplayTag, AttributeTag, float, NewAttributeValue, float, OldAttributeValue);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent {
@@ -37,15 +38,15 @@ public:
 	virtual void BeginPlay() override;
 	
 protected:	
-	UPROPERTY()
-	TObjectPtr<URogueAttributeSet> Attributes;
-	
-	TMap<FGameplayTag, FRogueAttribute*> CachedAttributes;
-	
-	UPROPERTY(EditAnywhere, Category=Attributes, NoClear)
-	TSubclassOf<URogueAttributeSet> AttributeSetClass;
+	UPROPERTY(EditAnywhere, Instanced, NoClear)
+	TObjectPtr<URogueAttributeSet> Attributes;   
+
+	// Find Attribute via GameplayTag from CachedAttributes
+	// Map of all Attributes with a GameplayTag key-value pair (Attribute Name must == GameplayTag)
+	TMap<FGameplayTag, FRogueAttribute*> CachedAttributes;   
 	
 	TMap<FGameplayTag, FOnAttributeChanged> AttributeListeners;
+	TMap<FGameplayTag, TArray<FOnAttributeDynamicChanged>> AttributeDynamicListeners;
 
 	UPROPERTY()
 	TArray<TObjectPtr<URogueAction>> Actions;
@@ -59,8 +60,16 @@ public:
 	void StopAction(const FGameplayTag InActionName);
 
 	FRogueAttribute* GetAttribute(const FGameplayTag InAttributeTag) const;
+	UFUNCTION(BlueprintCallable)
+	float GetAttributeValue(const FGameplayTag InAttributeTag) const;
 	
 	FOnAttributeChanged& GetAttributeListener(FGameplayTag AttributeTag);
+	
+	UFUNCTION(BlueprintCallable, DisplayName="Add Attribute Listener", meta=(Keywords="events,delegate"))
+	void AddDynamicAttributeListener(FOnAttributeDynamicChanged Event, const FGameplayTag AttributeTag);
+	
+	UFUNCTION(BlueprintCallable, DisplayName="Remove Attribute Listener", meta=(Keywords="events,delegate"))
+	void RemoveDynamicAttributeListener(FOnAttributeDynamicChanged Event);
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyAttributeChange(FGameplayTag AttributeTag, float Delta, EAttributeModifyType ModifyType);

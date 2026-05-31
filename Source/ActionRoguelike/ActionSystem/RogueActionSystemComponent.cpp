@@ -13,15 +13,18 @@ URogueActionSystemComponent::URogueActionSystemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
-	
-	AttributeSetClass = URogueAttributeSet::StaticClass();
 }
 
 void URogueActionSystemComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	
-	Attributes = NewObject<URogueAttributeSet>(this, AttributeSetClass);
+	// Fallback for Blueprint and CPP having not yet defined a default AttributeSet
+	if (Attributes == nullptr)
+	{
+		Attributes = NewObject<URogueAttributeSet>(this, URogueAttributeSet::StaticClass());
+		UE_LOG(LogTemp, Warning, TEXT("No default AttributeSet defined for %s."), *GetNameSafe(GetOwner()));
+	}
 	
 	// Iterate all the available UPROPERTY members of the class <URogueAttributeSet> Attributes
 	// Add all members to CachedAttributes Map with GameplayTag as key-value pair
@@ -97,12 +100,17 @@ void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActio
 // ATTRIBUTES
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Convenience function to access all members within <URogueAttributeSet> class,
+// Convenience function to access any members within <URogueAttributeSet> class,
 // regardless of which derived Attribute Set they might exist in
 FRogueAttribute* URogueActionSystemComponent::GetAttribute(const FGameplayTag InAttributeTag) const
 {
 	FRogueAttribute* FoundAttribute = *CachedAttributes.Find(InAttributeTag);
 	return FoundAttribute;
+}
+
+float URogueActionSystemComponent::GetAttributeValue(const FGameplayTag InAttributeTag) const
+{
+	return GetAttribute(InAttributeTag)->GetValue();
 }
 
 void URogueActionSystemComponent::ApplyAttributeChange(const FGameplayTag AttributeTag, const float Delta, EAttributeModifyType ModifyType)
@@ -129,9 +137,24 @@ void URogueActionSystemComponent::ApplyAttributeChange(const FGameplayTag Attrib
 	
 	Attributes->PostAttributeChanged();
 
+	// Native C++ listeners
 	if (const FOnAttributeChanged* Event = AttributeListeners.Find(AttributeTag))
 	{
 		Event->Broadcast(AttributeTag, FoundAttribute->GetValue(), OldValue);
+	}
+	// Blueprint listeners
+	if (TArray<FOnAttributeDynamicChanged>* Events = AttributeDynamicListeners.Find(AttributeTag))
+	{		
+		for (int i = Events->Num() - 1; i >= 0; --i) // Reverse for loop. Start at the back.
+		{
+			FOnAttributeDynamicChanged& Event = (*Events)[i];
+			bool bIsBound = Event.ExecuteIfBound(AttributeTag,  FoundAttribute->GetValue(), OldValue);
+			if (!bIsBound)
+			{
+				Events->RemoveAt(i);
+				UE_LOG(LogTemp, Warning, TEXT("Cleaned up expired attribute delegate for %s"), *GetNameSafe(GetOwner()));
+			}
+		}
 	}
 	
 	UE_LOGFMT(LogTemp, Log, "Attribute: {0}, New: {1}, Old: {2}", AttributeTag.ToString(), FoundAttribute->GetValue(), OldValue);
@@ -140,4 +163,23 @@ void URogueActionSystemComponent::ApplyAttributeChange(const FGameplayTag Attrib
 FOnAttributeChanged& URogueActionSystemComponent::GetAttributeListener(FGameplayTag AttributeTag)
 {
 	return AttributeListeners.FindOrAdd(AttributeTag);
+}
+
+void URogueActionSystemComponent::AddDynamicAttributeListener(const FOnAttributeDynamicChanged Event,	const FGameplayTag AttributeTag)
+{
+	TArray<FOnAttributeDynamicChanged>& Events = AttributeDynamicListeners.FindOrAdd(AttributeTag);
+	Events.Add(Event);
+}
+
+void URogueActionSystemComponent::RemoveDynamicAttributeListener(const FOnAttributeDynamicChanged Event)
+{
+	for (TPair<FGameplayTag, TArray<FOnAttributeDynamicChanged>>& Listener : AttributeDynamicListeners)
+	{
+		if (Listener.Value.RemoveSingle(Event) > 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Successfully removed blueprint binding from AttributeDynamicListeners."))
+			break;
+		}
+		
+	}
 }
