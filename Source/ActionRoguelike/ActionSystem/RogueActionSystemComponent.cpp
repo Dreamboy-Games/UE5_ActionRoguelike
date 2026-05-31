@@ -23,7 +23,8 @@ void URogueActionSystemComponent::InitializeComponent()
 	if (Attributes == nullptr)
 	{
 		Attributes = NewObject<URogueAttributeSet>(this, URogueAttributeSet::StaticClass());
-		UE_LOG(LogTemp, Warning, TEXT("No default AttributeSet defined for %s."), *GetNameSafe(GetOwner()));
+		UE_LOG(LogTemp, Warning, TEXT("No default AttributeSet defined. "
+			"Set using SetDefaultAttributeSet() during Actor construction or assign in Blueprint ActionComponent for %s."), *GetNameSafe(GetOwner()));
 	}
 	
 	// Iterate all the available UPROPERTY members of the class <URogueAttributeSet> Attributes
@@ -46,6 +47,15 @@ void URogueActionSystemComponent::InitializeComponent()
 			GrantAction(ActionClass);
 		}
 	}
+}
+
+void URogueActionSystemComponent::SetDefaultAttributeSet(TSubclassOf<URogueAttributeSet> AttributeSetClass)
+{
+	check(!HasBeenInitialized());
+	
+	// Only available during constructors of UObjects
+	const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get();
+	Attributes = Cast<URogueAttributeSet>(ObjectInitializer.CreateDefaultSubobject(this, TEXT("Attributes"), AttributeSetClass, AttributeSetClass));
 }
 
 void URogueActionSystemComponent::BeginPlay()

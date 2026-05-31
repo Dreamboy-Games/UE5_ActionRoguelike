@@ -27,18 +27,19 @@ DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnAttributeChanged, FGameplayTag /*Attri
 // Blueprint delegate
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnAttributeDynamicChanged, FGameplayTag, AttributeTag, float, NewAttributeValue, float, OldAttributeValue);
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), HideCategories=(Navigation,Cooking,Tags))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent {
 	GENERATED_BODY()
 	
 public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
+	void SetDefaultAttributeSet(TSubclassOf<URogueAttributeSet> AttributeSetClass);
 	
 	virtual void BeginPlay() override;
 	
 protected:	
-	UPROPERTY(EditAnywhere, Instanced, NoClear)
+	UPROPERTY(EditAnywhere, Instanced, NoClear, Category="Action System")
 	TObjectPtr<URogueAttributeSet> Attributes;   
 
 	// Find Attribute via GameplayTag from CachedAttributes
@@ -51,7 +52,7 @@ protected:
 	UPROPERTY()
 	TArray<TObjectPtr<URogueAction>> Actions;
 	
-	UPROPERTY(EditAnywhere, Category="Actions")
+	UPROPERTY(EditAnywhere, Category="Action System")
 	TArray<TSubclassOf<URogueAction>> DefaultActions;
 
 public:

@@ -5,6 +5,7 @@
 
 #include "RogueGameplayTags.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
+#include "ActionSystem/RogueAttributeSet.h"
 
 
 ARogueAICharacter::ARogueAICharacter()
@@ -12,6 +13,7 @@ ARogueAICharacter::ARogueAICharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	
 	ActionSystemComponent = CreateDefaultSubobject<URogueActionSystemComponent>(TEXT("ActionSystemComponent"));
+	ActionSystemComponent->SetDefaultAttributeSet(URogueMonsterAttributeSet::StaticClass());
 }
 
 float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
