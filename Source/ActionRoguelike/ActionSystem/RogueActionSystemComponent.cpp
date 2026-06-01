@@ -2,6 +2,8 @@
 
 
 #include "RogueActionSystemComponent.h"
+
+#include "ActionRoguelike.h"
 #include "GameplayTagContainer.h"
 
 #include "RogueAction.h"
@@ -23,7 +25,7 @@ void URogueActionSystemComponent::InitializeComponent()
 	if (Attributes == nullptr)
 	{
 		Attributes = NewObject<URogueAttributeSet>(this, URogueAttributeSet::StaticClass());
-		UE_LOG(LogTemp, Warning, TEXT("No default AttributeSet defined. "
+		UE_LOG(LogGame, Warning, TEXT("No default AttributeSet defined. "
 			"Set using SetDefaultAttributeSet() during Actor construction or assign in Blueprint ActionComponent for %s."), *GetNameSafe(GetOwner()));
 	}
 	
@@ -82,7 +84,7 @@ void URogueActionSystemComponent::StartAction(const FGameplayTag InActionName)
 		}
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("Action '%s' not found"), *InActionName.ToString());
+	UE_LOG(LogGame, Warning, TEXT("Action '%s' not found"), *InActionName.ToString());
 }
 
 void URogueActionSystemComponent::StopAction(const FGameplayTag InActionName)
@@ -99,7 +101,7 @@ void URogueActionSystemComponent::StopAction(const FGameplayTag InActionName)
 		}
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("Action '%s' not found"), *InActionName.ToString());
+	UE_LOG(LogGame, Warning, TEXT("Action '%s' not found"), *InActionName.ToString());
 }
 
 void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActionClass)
@@ -165,12 +167,12 @@ void URogueActionSystemComponent::ApplyAttributeChange(const FGameplayTag Attrib
 			if (!bIsBound)
 			{
 				Events->RemoveAt(i);
-				UE_LOG(LogTemp, Warning, TEXT("Cleaned up expired attribute delegate for %s"), *GetNameSafe(GetOwner()));
+				UE_LOG(LogGame, Warning, TEXT("Cleaned up expired attribute delegate for %s"), *GetNameSafe(GetOwner()));
 			}
 		}
 	}
 	
-	UE_LOGFMT(LogTemp, Log, "Attribute: {0}, New: {1}, Old: {2}", AttributeTag.ToString(), FoundAttribute->GetValue(), OldValue);
+	UE_LOGFMT(LogGame, Log, "Attribute: {0}, New: {1}, Old: {2}", AttributeTag.ToString(), FoundAttribute->GetValue(), OldValue);
 }
 
 FOnAttributeChanged& URogueActionSystemComponent::GetAttributeListener(FGameplayTag AttributeTag)
@@ -190,7 +192,7 @@ void URogueActionSystemComponent::RemoveDynamicAttributeListener(const FOnAttrib
 	{
 		if (Listener.Value.RemoveSingle(Event) > 0)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Successfully removed blueprint binding from AttributeDynamicListeners."))
+			UE_LOG(LogGame, Warning, TEXT("Successfully removed blueprint binding from AttributeDynamicListeners."))
 			break;
 		}
 		

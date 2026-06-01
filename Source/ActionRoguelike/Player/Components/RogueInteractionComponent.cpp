@@ -87,10 +87,13 @@ void URogueInteractionComponent::Interact()
 	{
 		InteractInterface->Interact();
 	} */
-	const FVector Center = CastChecked<APlayerController>(GetOwner())->GetPawn()->GetActorLocation();
-	bool SelectedActorInRange = (SelectedActor->GetActorLocation() - Center).Size() < InteractionRadius;
-	if (SelectedActor && SelectedActorInRange)
+	if (SelectedActor)
 	{
-		IRogueInteractionInterface::Execute_Interact(SelectedActor);
+		const FVector Center = CastChecked<APlayerController>(GetOwner())->GetPawn()->GetActorLocation();
+		const bool SelectedActorInRange = (SelectedActor->GetActorLocation() - Center).Size() < InteractionRadius;
+		if (SelectedActorInRange)
+		{
+			IRogueInteractionInterface::Execute_Interact(SelectedActor);
+		}
 	}
 }

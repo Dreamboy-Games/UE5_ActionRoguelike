@@ -13,6 +13,7 @@
 ARogueProjectileMagic::ARogueProjectileMagic()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	InitialLifeSpan = 8.0f;
 }
 
 

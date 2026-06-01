@@ -4,6 +4,7 @@
 #include "RogueBTDecorator_IsLowHealth.h"
 
 #include "AIController.h"
+#include "RogueGameplayTags.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
 
 bool URogueBTDecorator_IsLowHealth::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
@@ -14,9 +15,9 @@ bool URogueBTDecorator_IsLowHealth::CalculateRawConditionValue(UBehaviorTreeComp
 	URogueActionSystemComponent* ActionComp = Pawn->GetComponentByClass<URogueActionSystemComponent>();
 	if (ensure(ActionComp))
 	{
-		check(false);
 		// Is low health?
-		return false; //(ActionComp->GetHealth() / ActionComp->GetMaxHealth()) < LowHealthFraction;
+		const float HealthFraction = ActionComp->GetAttributeValue(SharedGameplayTags::Attribute_Health) / ActionComp->GetAttributeValue(SharedGameplayTags::Attribute_HealthMax);
+		return HealthFraction < LowHealthFraction;
 	}
 	
 	return false;

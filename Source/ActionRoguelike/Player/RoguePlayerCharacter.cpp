@@ -32,6 +32,8 @@ void ARoguePlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
+	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
+	
 	//ActionSystemComponent->OnHealthChanged.AddDynamic(this, &ThisClass::OnHealthChanged);
 	FOnAttributeChanged& Event = ActionSystemComponent->GetAttributeListener(SharedGameplayTags::Attribute_Health);
 	Event.AddUObject(this, &ThisClass::OnHealthChanged);
@@ -106,13 +108,28 @@ float ARoguePlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent 
 	const float RageToAdd = DamageAmount * 0.75f;
 	ActionSystemComponent->ApplyAttributeChange(SharedGameplayTags::Attribute_Rage, RageToAdd, Modifer);
 	
+	GetMesh()->SetOverlayMaterialMaxDrawDistance(0);
+	// Material Instance Dynamic
+	// GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->GetWorld()->TimeSeconds);
+	
+	// Custom Primitive Data
+	GetMesh()->SetCustomPrimitiveDataFloat(0, GetWorld()->TimeSeconds);
+	
+	GetWorldTimerManager().SetTimer(OverlayTimerHandle, [this]()
+	{
+		if (IsValid(this))
+		{
+			GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
+		}
+	}, 1.0f, false); 
+	
 	return ActualDamage;
 }
 
 void ARoguePlayerCharacter::OnHealthChanged(FGameplayTag AttributesTag, float NewHealth, float OldHealth)
 {
 	// Died?
-	if (FMath::IsNearlyZero(NewHealth))
+	if (FMath::IsNearlyZero(NewHealth) && OldHealth > 0.0f)
 	{
 		DisableInput(nullptr);
 		GetMovementComponent()->StopMovementImmediately();

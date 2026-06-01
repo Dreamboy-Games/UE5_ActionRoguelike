@@ -66,7 +66,6 @@ protected:
 	void StopAction(const FGameplayTag InActionName);
 	
 	void OnHealthChanged(FGameplayTag AttributesTag, float NewHealth, float OldHealth);
-
 	
 public:
 	void Move(const FInputActionValue& InValue);
@@ -74,4 +73,7 @@ public:
 	virtual void Jump() override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+protected:
+	FTimerHandle OverlayTimerHandle;
 };
