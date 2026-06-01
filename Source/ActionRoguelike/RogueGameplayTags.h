@@ -2,6 +2,10 @@
 #include "NativeGameplayTags.h"
 
 namespace SharedGameplayTags {
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatusEffect_Attacking);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatusEffect_Sprinting);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatusEffect_Stunned);
+	
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_PrimaryAttack);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_SecondaryAttack);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_SpecialAttack);
