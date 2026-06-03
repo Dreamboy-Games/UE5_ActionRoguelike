@@ -37,4 +37,6 @@ protected:
 	TArray<FVector> CoinLocations;
 	TArray<int32> CoinAmounts;
 	TArray<FPrimitiveInstanceId> MeshIDs;
+	
+	void OnPickupMeshLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject) const;
 };
