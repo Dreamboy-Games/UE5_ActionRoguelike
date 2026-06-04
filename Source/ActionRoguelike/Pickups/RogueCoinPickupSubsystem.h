@@ -6,6 +6,8 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "RogueCoinPickupSubsystem.generated.h"
 
+class URogueDeveloperSettings;
+class UAudioComponent;
 class UInstancedStaticMeshComponent;
 struct FPrimitiveInstanceId;
 
@@ -30,13 +32,21 @@ public:
 		RETURN_QUICK_DECLARE_CYCLE_STAT(RogueCoinPickupSubsystem, STATGROUP_Tickables);
 	}
 	
-protected:
+protected:	
 	UPROPERTY()
 	TObjectPtr<UInstancedStaticMeshComponent> WorldISM;
+	
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> WorldAudioComp;
 	
 	TArray<FVector> CoinLocations;
 	TArray<int32> CoinAmounts;
 	TArray<FPrimitiveInstanceId> MeshIDs;
 	
 	void OnPickupMeshLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject) const;
+	void OnPickupSoundLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject) const;
+	
+	void PlayPickupSound();
+	
+	FName CoinPickupAudioTriggerParamName;
 };

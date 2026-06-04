@@ -5,6 +5,7 @@
 
 #include "ActionRoguelike.h"
 #include "EngineUtils.h"
+#include "Components/AudioComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Core/RogueDeveloperSettings.h"
 #include "Player/RoguePlayerCharacter.h"
@@ -23,16 +24,29 @@ void URogueCoinPickupSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	WorldISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WorldISM->RegisterComponentWithWorld(World);
 
-	FLoadSoftObjectPathAsyncDelegate Delegate;
-	Delegate.BindUObject(this, &ThisClass::OnPickupMeshLoadComplete);
+	WorldAudioComp = NewObject<UAudioComponent>(World, NAME_None, RF_Transient);
+	WorldAudioComp->SetAutoActivate(false);
+	WorldAudioComp->RegisterComponentWithWorld(World);
 	
-	GetDefault<URogueDeveloperSettings>()->CoinPickupMesh.LoadAsync(Delegate);
+	//FLoadSoftObjectPathAsyncDelegate Delegate;
+	//Delegate.BindUObject(this, &ThisClass::OnPickupMeshLoadComplete);
+
+	const URogueDeveloperSettings* DevSettings = GetDefault<URogueDeveloperSettings>();
+	DevSettings->CoinPickupMesh.LoadAsync(FLoadSoftObjectPathAsyncDelegate::CreateUObject(this, &ThisClass::OnPickupMeshLoadComplete));
+	DevSettings->CoinPickupSound.LoadAsync(FLoadSoftObjectPathAsyncDelegate::CreateUObject(this, &ThisClass::OnPickupSoundLoadComplete));
+	CoinPickupAudioTriggerParamName = DevSettings->CoinPickupTriggerParameter;
 }
 
 inline void URogueCoinPickupSubsystem::OnPickupMeshLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject) const
 {
 	WorldISM->SetStaticMesh(Cast<UStaticMesh>(LoadedObject));
 }
+
+void URogueCoinPickupSubsystem::OnPickupSoundLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject) const
+{
+	WorldAudioComp->SetSound(Cast<USoundBase>(LoadedObject));
+}
+
 
 void URogueCoinPickupSubsystem::AddCoinPickups(TArray<FVector> NewLocations, TArray<int32> NewAmounts)
 {
@@ -91,6 +105,12 @@ void URogueCoinPickupSubsystem::Tick(float DeltaTime)
 		RemoveCoinPickup(CoinIndex);
 	}
 	
+	if (TotalCoinsToGrant > 0)
+	{
+		WorldAudioComp->SetWorldLocation(PlayerLocation);
+		PlayPickupSound();
+	}
+	
 	// @todo: grant coins to player(s)
 	UE_CLOG(TotalCoinsToGrant > 0, LogGame, Log, TEXT("Pickup Coin Amount = %d"), TotalCoinsToGrant);
 	
@@ -98,4 +118,13 @@ void URogueCoinPickupSubsystem::Tick(float DeltaTime)
 	{
 		DrawDebugPoint(World, CoinLocations[i], 8.0f, FColor::White);
 	}
+}
+
+void URogueCoinPickupSubsystem::PlayPickupSound()
+{
+	if (!WorldAudioComp->IsPlaying())
+	{
+		WorldAudioComp->Play();
+	}
+	WorldAudioComp->SetTriggerParameter(CoinPickupAudioTriggerParamName);
 }
