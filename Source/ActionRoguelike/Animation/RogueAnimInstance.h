@@ -24,4 +24,7 @@ protected:
 	
 	UPROPERTY(Transient, BlueprintReadOnly, Category=StatusEffects)
 	bool bIsSprinting;
+	
+	UPROPERTY(Transient, BlueprintReadOnly, Category=StatusEffects)
+	bool bIsStunned;
 };

@@ -56,7 +56,10 @@ protected:
 	TArray<TSubclassOf<URogueAction>> DefaultActions;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void GrantAction(TSubclassOf<URogueAction> NewActionClass);
+	
+	void RemoveAction(URogueAction* ActionToRemove);
 	void StartAction(const FGameplayTag InActionName);
 	void StopAction(const FGameplayTag InActionName);
 

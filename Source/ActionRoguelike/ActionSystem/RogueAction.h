@@ -53,6 +53,11 @@ public:
 		return ActionName;
 	}
 	
+	virtual bool ImplementsGetWorld() const override
+	{
+		return true;
+	}
+	
 protected:
 	// GameTime until the Aciton is available again
 	UPROPERTY(Transient)
